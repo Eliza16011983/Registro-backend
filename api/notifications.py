@@ -3,11 +3,12 @@ import threading
 
 def send_user_created_email(user):
     def _send_notification():
-        url = "http://notificaciones-service:8000/send-email/"
+        url = "http://notification-service:5000/notify"
         payload = {
-            "to": user.email,
-            "subject": "Registro exitoso",
-            "body": f"Hola {user.username}, gracias por registrarte."
+            "asunto": "Nuevo registro de usuario",
+            "mensaje": f"Se ha creado un nuevo usuario:\nNombre: {user.nombre}\nCorreo: {user.email}",
+            "nombre": user.nombre,
+            "correo": user.email
         }
         try:
             response = requests.post(url, json=payload, timeout=3)

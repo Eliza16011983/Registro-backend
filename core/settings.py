@@ -10,7 +10,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-key')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -25,6 +25,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -57,8 +58,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'usuarios',
+        'USER': 'usuarios',
+        'PASSWORD': 'usuarios',
+        'HOST': 'usuarios.cxeeocrtzohx.us-east-1.rds.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
@@ -72,7 +77,10 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# ✅ Habilita compresión y cacheo de archivos estáticos
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -95,3 +103,24 @@ ADMIN_EMAIL = os.getenv('EMAIL_RECEIVER')
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5500",
 ]
+
+# ... todo lo anterior ...
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5500",
+]
+
+# 🔍 Verificación rápida de conexión a la base de datos (solo para logs)
+import psycopg2
+try:
+    conn = psycopg2.connect(
+        dbname=os.getenv('DB_NAME', 'usuarios'),
+        user=os.getenv('DB_USER', 'usuarios'),
+        password=os.getenv('DB_PASSWORD', 'usuarios'),
+        host=os.getenv('DB_HOST', 'localhost'),
+        port=os.getenv('DB_PORT', '5432'),
+        connect_timeout=3
+    )
+    conn.close()
+except Exception as e:
+    print(f"⚠️ Error de conexión a la base de datos: {e}")

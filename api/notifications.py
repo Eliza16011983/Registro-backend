@@ -1,17 +1,19 @@
+import requests
 import threading
-from django.conf import settings
-from django.core.mail import send_mail, BadHeaderError
 
 def send_user_created_email(user):
-    def _send_email():
-        subject = 'Nuevo usuario creado'
-        message = f'Se ha creado un nuevo usuario:\n\nNombre: {user.nombre}\nEmail: {user.email}\nTeléfono: {user.telefono}'
-        recipient_list = [settings.ADMIN_EMAIL]
+    def _send_notification():
+        url = "http://notificaciones-service:8000/send-email/"
+        payload = {
+            "to": user.email,
+            "subject": "Registro exitoso",
+            "body": f"Hola {user.username}, gracias por registrarte."
+        }
         try:
-            send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list, fail_silently=False)
-            print("Correo enviado correctamente.")
-        except BadHeaderError:
-            print("Error: encabezado inválido")
-        except Exception as e:
-            print(f"Error al enviar correo: {e}")
-    threading.Thread(target=_send_email).start()
+            response = requests.post(url, json=payload, timeout=3)
+            response.raise_for_status()
+            print("📤 Notificación enviada:", response.text)
+        except requests.exceptions.RequestException as e:
+            print("⚠️ Error al enviar notificación:", str(e))
+
+    threading.Thread(target=_send_notification).start()

@@ -17,5 +17,5 @@ router.register(r'users', UsuarioViewSet, basename='usuario')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', health_check),         # ✅ Endpoint para Kubernetes
-    path('', include(router.urls)),        # ✅ Rutas de DRF
+    path('api/', include(router.urls)),        # ✅ Rutas de DRF
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)  # ✅ Archivos estáticos

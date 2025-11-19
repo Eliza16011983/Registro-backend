@@ -1,6 +1,7 @@
 # Backend - Registro de Usuarios
 
-Este módulo implementa la lógica del backend para el sistema de registro de usuarios. Expone una API REST para gestionar usuarios y enviar notificaciones.
+Este microservicio gestiona la lógica del sistema, recibiendo solicitudes desde el frontend y procesando la creación y listado de usuarios.
+ La API fue desarrollada en Django y expuesta mediante Gunicorn dentro de un contenedor Docker.
 
 ## Tecnologías
 - Python 3
@@ -9,28 +10,64 @@ Este módulo implementa la lógica del backend para el sistema de registro de us
 - Gunicorn (para producción)
 - Docker
 
-## Endpoints principales
-- `POST /api/usuarios/`: registrar nuevo usuario
-- `GET /api/usuarios/`: listar usuarios registrados
+##Rutas principales
+Método          Ruta              Descripción
+GET          /api/users/       Lista todos los usuarios
+POST         /api/users/       Crea un nuevo usuario
 
-## Configuración
-1. Crear entorno virtual:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
 
-2.Instalar dependencias:
-pip install -r requirements.txt
+manage.py
+users_api/
+   models.py
+   views.py
+   urls.py
+k8s/
+   deployment.yaml
+   service.yaml
+Dockerfile
 
-3.Ejecutar servidor:
-python manage.py runserver
 
-Producción
+##Flujo de funcionamiento:
 
-    Se incluye configuración para Gunicorn y Docker.
+1-El usuario completa el formulario en el frontend.
 
-    Verificar que .env contenga las variables necesarias.
 
-Notas
+2-El frontend envía una solicitud HTTP al backend.
 
-    El backend se comunica con el microservicio de notificaciones vía HTTP.
+
+3-Django procesa la solicitud:
+
+
+   -valida datos
+
+
+   -crea registro
+
+   -retorna respuesta JSON
+
+
+4-Se registra el evento en logs del backend.
+
+
+5-El backend invoca al servicio de notificaciones (si aplicaba la opción A).
+
+
+##Comandos de prueba
+Crear usuario:
+
+curl -i -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Demo","email":"demo@demo.com","telefono":"123"}' \
+  http://<LB-BACKEND>:8000/api/users/
+
+Listar usuarios:
+curl -i http://<LB-BACKEND>:8000/api/users/
+
+Despliegue:
+docker build -t backend:latest .
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+
+
+
+

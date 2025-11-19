@@ -16,10 +16,12 @@ spec:
     spec:
       containers:
         - name: backend
-          image: elizabethdeleonlantean/backend:latest
+          image: elizabethdeleonlantean/backend:v2
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
+          # 👇 IMPORTANTE: sacamos el runserver para usar Gunicorn del Dockerfile
+          # args: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
           env:
             - name: DB_NAME
               value: "usuarios"
@@ -33,6 +35,8 @@ spec:
               value: "5432"
             - name: ALLOWED_HOSTS
               value: "*"
+            - name: NOTIFICATION_URL
+              value: "http://notification-svc:5000/notify"
           resources:
             requests:
               memory: "256Mi"
@@ -44,11 +48,19 @@ spec:
             httpGet:
               path: /health/
               port: 8000
+              scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
           livenessProbe:
             httpGet:
               path: /health/
               port: 8000
+              scheme: HTTP
             initialDelaySeconds: 15
             periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1

@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import psycopg2
 
 load_dotenv()
 
@@ -19,21 +20,26 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
     'api',
-    'corsheaders',
+
+    'corsheaders',  # CORS
 ]
 
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware', 
+    # CORS PRIMERO
+    'corsheaders.middleware.CorsMiddleware',
+
+    # Después lo estándar
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -56,6 +62,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
+# =========================
+# 📌 BASE DE DATOS
+# =========================
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -70,21 +79,23 @@ DATABASES = {
 AUTH_PASSWORD_VALIDATORS = []
 
 LANGUAGE_CODE = 'es'
-
 TIME_ZONE = 'America/Montevideo'
-
 USE_I18N = True
-
 USE_TZ = True
 
+# =========================
+# 📌 STATIC FILES
+# =========================
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-# ✅ Habilita compresión y cacheo de archivos estáticos
+
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Django REST Framework
+# =========================
+# 📌 Django REST Framework
+# =========================
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -92,7 +103,9 @@ REST_FRAMEWORK = {
     ]
 }
 
-# Email settings from .env
+# =========================
+# 📌 Email
+# =========================
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
@@ -100,18 +113,18 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 ADMIN_EMAIL = os.getenv('EMAIL_RECEIVER')
 
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5500",
-]
+# =========================
+# 📌 CORS CONFIG — LAB
+# =========================
 
-# ... todo lo anterior ...
+# Para el laboratorio: permitir cualquier origen
+CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5500",
-]
+print("### SETTINGS CARGADOS: CORS_ALLOW_ALL_ORIGINS =", CORS_ALLOW_ALL_ORIGINS)
 
-# 🔍 Verificación rápida de conexión a la base de datos (solo para logs)
-import psycopg2
+# =========================
+# 📌 Chequeo de Base de Datos (para logs)
+# =========================
 try:
     conn = psycopg2.connect(
         dbname=os.getenv('DB_NAME', 'usuarios'),

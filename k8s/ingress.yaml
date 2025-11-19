@@ -2,13 +2,29 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: backend-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:411106199431:certificate/c2ae711c-8969-497f-bba1-3080a9002279
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
 spec:
-  ingressClassName: nginx
   rules:
-    - host: a5df645cbfc89471583c68d818ef816c-1044778620.us-east-1.elb.amazonaws.com
+    - host: www.infra-lab.abrdns.com
       http:
         paths:
-          - path: /users
+          - path: /api/
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 8000
+    - http:
+        paths:
+          - path: /health/
             pathType: Prefix
             backend:
               service:
